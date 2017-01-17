@@ -1,1 +1,0 @@
-scatterplot,not recommended,ch03_perception,naomi

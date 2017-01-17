@@ -1,1 +1,0 @@
-timeseries,line graph,not recommended,ch09_software,naomi,not doing

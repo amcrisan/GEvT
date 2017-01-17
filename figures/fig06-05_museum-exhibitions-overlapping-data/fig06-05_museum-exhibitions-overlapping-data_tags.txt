@@ -1,1 +1,0 @@
-scatterplot,stripplot,good,ch06_general,naomi

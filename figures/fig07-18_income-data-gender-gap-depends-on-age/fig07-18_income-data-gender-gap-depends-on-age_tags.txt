@@ -1,1 +1,0 @@
-scatterplot,not recommended,ch07_scales,naomi,not doing

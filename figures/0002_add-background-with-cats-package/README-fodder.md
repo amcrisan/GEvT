@@ -1,1 +1,0 @@
-The [`cats` package](https://github.com/hilaryparker/cats) provides several cat-related functions.

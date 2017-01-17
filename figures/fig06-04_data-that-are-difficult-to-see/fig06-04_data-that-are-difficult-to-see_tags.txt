@@ -1,1 +1,0 @@
-scatterplot,not recommended,ch06_general,naomi

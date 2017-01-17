@@ -1,1 +1,0 @@
-trellis display,timeseries,good,ch08_beforeafter,naomi

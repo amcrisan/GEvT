@@ -1,1 +1,0 @@
-dot plot,stripplot,good,ch04_1or2dim,naomi,legend

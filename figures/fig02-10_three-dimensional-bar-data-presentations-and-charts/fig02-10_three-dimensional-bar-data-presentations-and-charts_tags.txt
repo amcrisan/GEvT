@@ -1,1 +1,0 @@
-bar chart,ch02_limitations,naomi,not doing,not recommended
