@@ -86,7 +86,18 @@ shinyUI(fluidPage(
         #                             value = "Please select a figure" ,
         #                             readOnly = TRUE, height = "450px"),
         #                   htmlOutput("link")))),
-        tabPanel("Figure", imageOutput("figImage_only", height = "100%"))#,
+        tabPanel("Figure", 
+                 br(),
+                 fluidRow(
+                   actionButton("showAnnotations", "Show Annotations"),
+                   actionButton("annotateGo", "Edit or Add Annotations Tags")
+                 ),
+                 br(),
+                 htmlOutput("figPaper_info"),
+                 br(),
+                 imageOutput("figImage_only", height = "100%")),
+        tabPanel("Annotate",htmlOutput("annotate_interface"))#,
+        #tabPanel("Paper Info",htmlOutput("figPaper_info"))
         #tabPanel("Code", htmlOutput("code_only"))
       )
 

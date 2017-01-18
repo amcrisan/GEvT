@@ -115,7 +115,7 @@ shinyServer(function(input, output, session){
   include.colnames = FALSE, include.rownames = FALSE
 
   )
-
+  
   # Create a reactiveValues object, to let us use settable reactive values
   values <- reactiveValues()
   values$clicked <- FALSE
@@ -134,9 +134,9 @@ shinyServer(function(input, output, session){
     if (!is.null(input$clicked) && input$clicked == TRUE) {
       values$code <- input$code
 
+    # Add figure name to URL so it can be retrieved later
+    session$sendCustomMessage("figClick", values$code)
     updateTabsetPanel(session, "tabset", selected = "Figure")  
-      # Add figure name to URL so it can be retrieved later
-      #session$sendCustomMessage("figClick", values$code)
       #session$sendCustomMessage("figClick")
     }
   })
@@ -175,6 +175,10 @@ shinyServer(function(input, output, session){
   }, deleteFile = FALSE)
   
 
+  observeEvent(input$annotateGo,{
+    updateTabsetPanel(session, "tabset", selected = "Annotate")
+  })
+  
   output$figImage_only <- renderImage({
 
     if(length(values$code) == 0) {
@@ -188,6 +192,24 @@ shinyServer(function(input, output, session){
          width = 600,
          height = "auto")
   }, deleteFile = FALSE)
+  
+  
+  
+  output$figPaper_info<-renderText({
+    if(length(values$code) == 0) {
+      x<- ""
+      return(x)
+    } else {
+      print(values$code)
+      #x<-paste("Source:", toString(fig_list[fig_list$basename == values$code,]$PMID))
+      record<-fig_list[fig_list$basename == values$code,]
+      
+      link <- paste(a(paste("Source:", toString(record$PMID)),
+                      href = paste(record$url), target = "_blank"))
+      
+      return(link)
+    }
+  })
 
   output$code_only <- reactive({
     x <- "Please select a figure"
