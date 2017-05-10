@@ -3,11 +3,16 @@ library(markdown) #includeMarkdown()
 library(plyr) #llply()
 library(shinyAce) #updateAceEditor()
 
+
+######################################################
+# Loading Figures and their annotations at start
+######################################################
+
+## Figures
 fig_list <- read.delim(file.path("data", "rawDB.txt"),
                        colClasses = "character")
 
 # get thumbnail files
-#thumbs <- file.path("thumbnails", paste0(fig_list$basename, "_thumb.png"))
 figs <- file.path("figures", paste0(fig_list$basename, ".png"))
 
 # get figure basenames from thumbnails and make HTML element for each figure
@@ -19,11 +24,39 @@ txt <- paste(figs_src)
 
 # check if thumbnail file exists ,
 # if its not there, replace with name of file
-#ind <- basename(thumbs) %in% list.files(file.path("www", "thumbnails"))
 ind <- basename(figs) %in% list.files(file.path("www", "figures"))
 
 txt[!ind] <- basename(figs)[!ind]
 
+## Tags
+
+tag_list<-read.csv(file="data/tags.csv",header=T,colClasses="character",stringsAsFactors = FALSE)
+
+#collapse all the tags for one document
+for(i in 1:nrow(fig_list)){
+  pmid<-fig_list$PMID[i]
+  tagString<-"Show All"
+  
+  tmp<-filter(tag_list,PMID==pmid) 
+   
+   if(nrow(tmp)>0){
+
+    tagString<-tmp %>%
+      select(contains("WhatLvl")) %>%
+      unlist()%>%
+      unique() %>%
+      na.omit() %>%
+      paste0(.,collapse=",")
+    
+    tagString<-paste0(c(unlist(tagString),"Show All"),collapse = ",")
+   }
+  
+  fig_list[i,]$tags<-tagString   
+}
+
+######################################################
+# Added Functions
+######################################################
 
 filter.tags <- function(x) {
   # Get filtered figures based on list of tags selected.
@@ -34,7 +67,7 @@ filter.tags <- function(x) {
   # Returns:
   #   A matrix containing filtered figures.
   list_of_ind <- llply(x, function(x) which(grepl(x, fig_list$tags, ignore.case = TRUE)))
-  #id_ind <- Reduce(intersect, list_of_ind) # intersection
+  id_ind <- Reduce(intersect, list_of_ind) # intersection
   ind_set <- unique(unlist(list_of_ind)) # get set
   ind_set
 }
@@ -72,22 +105,24 @@ pad.Vector <- function(x) {
 shinyServer(function(input, output, session){
 
   datasetInput <- reactive({
-    if((length(input$type) + length(input$dataset) + length(input$element) +
-          length(input$chapter)) == 0) {
+    if((length(input$selectWhatLevelOne) + length(input$selectWhatLevelTwo)) == 0) {
 
       txt_padded <- pad.Vector(txt)
       mat <- matrix(txt_padded , ncol = 3, byrow = TRUE)
 
     } else {
-      index_type <- as.list(input$type) # indices of selected type
-      index_tags <-	as.list(input$dataset) # indices of selected tags
-      index_elem <- as.list(input$element) # indices of selected elements
-      index_chap <- as.list(input$chapter) # indices of selected chapters
-
-      list_of_indices <- list(filter.tags(index_type),
-                              filter.tags(index_tags),
-                              filter.tags(index_elem),
-                              filter.tags(index_chap))
+      index_whatOne <- as.list(input$selectWhatLevelOne) # indices of selected type
+      index_whatTwo <- as.list(input$selectWhatLevelTwo) # indices of selected type
+      index_how <- as.list(input$selectHow)
+      
+      #just checking how often it says to "show all
+      
+      showAllNum<-llply(x, function(x) which(grepl("Show All", c(index_whatOne,index_whatTwo,index_how), ignore.case = TRUE)))
+      showAllNum<-length(showAllNum[[1]])
+    
+      list_of_indices <- list(filter.tags(index_whatOne),
+                              filter.tags(index_whatTwo),
+                              filter.tags(index_how))
 
       # remove empty elements from list of indices
       list_of_indices_clean <- delete.NULLs(list_of_indices)
@@ -137,28 +172,50 @@ shinyServer(function(input, output, session){
     # Add figure name to URL so it can be retrieved later
     session$sendCustomMessage("figClick", values$code)
     updateTabsetPanel(session, "tabset", selected = "Figure")  
-      #session$sendCustomMessage("figClick")
     }
   })
 
   # Load a figure and open the Figure tab
   observeEvent(values$code, {
-    # get contents of figure R file
-    #r_file <- file.path('data', paste0(values$code, ".R"))
-
-    #x <- includeText(r_file)
-    x<- "This is random text"
-
-    updateAceEditor(session, "fig_and_code",
-                    mode="r", value = x)
-
-    #   		updateAceEditor(session, "code_only",
-    # 											mode="r", value = x)
-
     updateTabsetPanel(session, "tabset", selected = "Figure & Code")
   })
   
 
+   output$whatLevelOne<-renderUI({
+     choices<-c(unique(tag_list$WhatLvl1),"Show All")
+     if(is.null(input$selectHow) ||input$selectHow == "Show All"){
+       selectizeInput(inputId="selectWhatLevelOne",label = "What (Level 1)",choices=choices,selected="Show All",multiple=TRUE)
+     }else{
+       optsChoices<-tag_list %>% filter(How1 %in% input$selectHow) %>% select(WhatLvl1)
+       optsChoices<-optsChoices$WhatLvl1[!is.na(optsChoices$WhatLvl1)]
+       selectizeInput(inputId="selectWhatLevelOne",label = "What (Level 1)",choices=choices,selected=optsChoices,multiple=TRUE)
+     }
+     
+   })
+  
+   
+   output$whatLevelTwo<-renderUI({
+     if(is.null(input$selectWhatLevelOne) ||input$selectWhatLevelOne == "Show All"){
+       choices<-unique(tag_list$WhatLvl2)
+       choices<-c(choices[!is.na(choices)],"Show All")
+       selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices=choices,selected="Show All",multiple=TRUE)
+     }else{
+       choices<-tag_list %>% filter(WhatLvl1 %in% input$selectWhatLevelOne) %>% select(WhatLvl2)
+       choices<-choices$WhatLvl2[!is.na(choices$WhatLvl2)]
+       selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices=choices,selected=choices,multiple=TRUE)
+     }
+     
+   })
+   
+   
+   output$How<-renderUI({
+    choices<-unique(tag_list$How1)
+    choices<-c(choices[!is.na(choices)],"Show All")
+    selectizeInput(inputId="selectHow",label = "How Visualized",choices=choices,selected="Show All",multiple=TRUE)
+
+   })
+   
+   
   
   output$figImage <- renderImage({
 
@@ -179,6 +236,7 @@ shinyServer(function(input, output, session){
     updateTabsetPanel(session, "tabset", selected = "Annotate")
   })
   
+  
   output$figImage_only <- renderImage({
 
     if(length(values$code) == 0) {
@@ -189,7 +247,7 @@ shinyServer(function(input, output, session){
                                           paste0(values$code, ".png")))
     }
     list(src = filename,
-         width = 600,
+         width = 800,
          height = "auto")
   }, deleteFile = FALSE)
   
@@ -210,41 +268,20 @@ shinyServer(function(input, output, session){
       return(link)
     }
   })
-
-  output$code_only <- reactive({
-    x <- "Please select a figure"
-    if (length(values$code) > 0) {
-
-      # get contents of figure R file
-      r_file <- file.path('data', paste0(values$code, ".R"))
-      x <- includeText(r_file)
-
+  
+  output$codeTable<-renderDataTable({
+    if(length(values$code) == 0){
+      return(NA)
+    }else{
+      pmid<-filter(fig_list,basename == values$code) %>% select(PMID)
+      print(pmid)
+      tmp<-filter(tag_list,PMID == pmid$PMID) %>%
+        select(contains("Lvl"),contains("How"))
+      print(tmp)
+      return(tmp)
     }
+  },options = list(dom = 't'))
 
-    editor <- aceEditor("code_only_editor", value = x, mode = "r",
-                        readOnly = TRUE)
-
-    editor <- gsub("\n", "", editor)
-
-    editor
-  })
-
-
-  output$link <- renderText({
-
-    if(length(values$code > 0)) {
-      repo <- paste0("https://github.com/jennybc/r-graph-catalog/tree/master/figures/",
-                     values$code)
-
-      target <- paste('target="_blank"')
-
-      link <- paste(a("Go to GitHub to download figure and code",
-                      href = paste(repo), target = "_blank"))
-      link
-
-    }
-
-  })
-
+ 
 })
 

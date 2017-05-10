@@ -1,5 +1,6 @@
 library(shiny)
 library(shinyAce)
+library(dplyr)
 
 ## Function from Joe Cheng
 ## https://gist.github.com/jcheng5/5913297
@@ -32,7 +33,7 @@ shinyUI(fluidPage(
 
   includeCSS(file.path("www", "css", "app.css")),
 
-  titlePanel("GEvT"),
+  titlePanel("GEViT Prototype"),
   sidebarLayout(
     sidebarPanel(
       id = "sidepanel",
@@ -44,9 +45,15 @@ shinyUI(fluidPage(
       #                   includeMarkdown("about-extended.md"),
       #                   placement = "right", trigger = "click")),
       br(),
-      checkboxGroupInput("type", strong("Filter by type"),
-                         choices = c("Good", "Not Recommended"),
-                         selected = list())#,
+      h4("Filter by Data (What)"),
+      uiOutput("whatLevelOne"),
+      uiOutput("whatLevelTwo"),
+      br(),
+      h4("Filter by visualization design (How)"),
+      uiOutput("How")
+      # checkboxGroupInput("type", strong("Filter by type"),
+      #                    choices = c("Good", "Not Recommended"),
+      #                    selected = list())#,
 
       # checkboxGroupInput("dataset", strong("Filter by tags"),
       #                    choices =
@@ -87,16 +94,19 @@ shinyUI(fluidPage(
         #                             readOnly = TRUE, height = "450px"),
         #                   htmlOutput("link")))),
         tabPanel("Figure", 
-                 br(),
-                 fluidRow(
-                   actionButton("showAnnotations", "Show Annotations"),
-                   actionButton("annotateGo", "Edit or Add Annotations Tags")
-                 ),
+                 #br(),
+                 #fluidRow(
+                 #  actionButton("showAnnotations", "Show Annotations")#,
+                   #actionButton("annotateGo", "Edit or Add Annotations Tags")
+                 #),
                  br(),
                  htmlOutput("figPaper_info"),
                  br(),
-                 imageOutput("figImage_only", height = "100%")),
-        tabPanel("Annotate",htmlOutput("annotate_interface"))#,
+                 imageOutput("figImage_only", height = "100%"),
+                 br(),
+                 h4("Qualtitative Codes"),
+                 dataTableOutput("codeTable"))#,
+        #tabPanel("Annotate",htmlOutput("annotate_interface"))#,
         #tabPanel("Paper Info",htmlOutput("figPaper_info"))
         #tabPanel("Code", htmlOutput("code_only"))
       )
