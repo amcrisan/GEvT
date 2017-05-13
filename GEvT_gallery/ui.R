@@ -47,8 +47,8 @@ shinyUI(fluidPage(
       br(),
       h4("Filter by Data (What)"),
       uiOutput("whatLevelOne"),
-      uiOutput("whatLevelTwo"),
-      br(),
+      #uiOutput("whatLevelTwo"),
+      #br(),
       h4("Filter by visualization design (How)"),
       uiOutput("How")
       # checkboxGroupInput("type", strong("Filter by type"),

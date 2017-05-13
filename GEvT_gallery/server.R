@@ -34,21 +34,21 @@ tag_list<-read.csv(file="data/tags.csv",header=T,colClasses="character",stringsA
 
 #collapse all the tags for one document
 for(i in 1:nrow(fig_list)){
-  pmid<-fig_list$PMID[i]
+  pmid<-fig_list$basename[i]
   tagString<-"Show All"
   
-  tmp<-filter(tag_list,PMID==pmid) 
+  tmp<-filter(tag_list,basename==pmid) 
    
    if(nrow(tmp)>0){
 
     tagString<-tmp %>%
-      select(contains("WhatLvl")) %>%
+      select(contains("WhatLvl"),contains("How1")) %>%
       unlist()%>%
       unique() %>%
       na.omit() %>%
       paste0(.,collapse=",")
     
-    tagString<-paste0(c(unlist(tagString),"Show All"),collapse = ",")
+    tagString<-paste0(c("Show All",unlist(tagString)),collapse = ",")
    }
   
   fig_list[i,]$tags<-tagString   
@@ -58,7 +58,7 @@ for(i in 1:nrow(fig_list)){
 # Added Functions
 ######################################################
 
-filter.tags <- function(x) {
+filter.tags <- function(x,showAll=TRUE) {
   # Get filtered figures based on list of tags selected.
   #
   # Args:
@@ -66,6 +66,11 @@ filter.tags <- function(x) {
   #
   # Returns:
   #   A matrix containing filtered figures.
+  
+  if(!showAll){
+    x<-setdiff(x,"Show All")
+  }
+  
   list_of_ind <- llply(x, function(x) which(grepl(x, fig_list$tags, ignore.case = TRUE)))
   id_ind <- Reduce(intersect, list_of_ind) # intersection
   ind_set <- unique(unlist(list_of_ind)) # get set
@@ -116,14 +121,19 @@ shinyServer(function(input, output, session){
       index_how <- as.list(input$selectHow)
       
       #just checking how often it says to "show all
+      tmp<-c(index_whatOne,index_whatTwo,index_how)
+      temp2<-sapply(tmp,function(val){
+        showAllNum<-llply(val, function(x) which(grepl("Show All", x, ignore.case = TRUE)))
+      })
       
-      showAllNum<-llply(x, function(x) which(grepl("Show All", c(index_whatOne,index_whatTwo,index_how), ignore.case = TRUE)))
-      showAllNum<-length(showAllNum[[1]])
-    
-      list_of_indices <- list(filter.tags(index_whatOne),
-                              filter.tags(index_whatTwo),
-                              filter.tags(index_how))
-
+      showAllNum<-sum(unlist(temp2))
+      showAllNum<-ifelse(showAllNum== 2, TRUE,FALSE)
+      
+      
+      list_of_indices <- list(filter.tags(index_whatOne,showAllNum),
+                              filter.tags(index_whatTwo,showAllNum),
+                              filter.tags(index_how,showAllNum))
+      
       # remove empty elements from list of indices
       list_of_indices_clean <- delete.NULLs(list_of_indices)
 
@@ -143,13 +153,11 @@ shinyServer(function(input, output, session){
   output$mytable <- renderTable({
 
     dataset <- datasetInput()
-    #dataset <- data.frame(dataset) # can just use matrix
+    dataset <- data.frame(dataset) # can just use matrix
     dataset
 
   }, sanitize.text.function = function(x) x,
-  include.colnames = FALSE, include.rownames = FALSE
-
-  )
+  include.colnames = FALSE, include.rownames = FALSE)
   
   # Create a reactiveValues object, to let us use settable reactive values
   values <- reactiveValues()
@@ -183,13 +191,16 @@ shinyServer(function(input, output, session){
 
    output$whatLevelOne<-renderUI({
      choices<-c(unique(tag_list$WhatLvl1),"Show All")
-     if(is.null(input$selectHow) ||input$selectHow == "Show All"){
-       selectizeInput(inputId="selectWhatLevelOne",label = "What (Level 1)",choices=choices,selected="Show All",multiple=TRUE)
-     }else{
-       optsChoices<-tag_list %>% filter(How1 %in% input$selectHow) %>% select(WhatLvl1)
-       optsChoices<-optsChoices$WhatLvl1[!is.na(optsChoices$WhatLvl1)]
-       selectizeInput(inputId="selectWhatLevelOne",label = "What (Level 1)",choices=choices,selected=optsChoices,multiple=TRUE)
-     }
+     selectizeInput(inputId="selectWhatLevelOne",label = "What (Level 1)",choices=choices,selected="Show All",multiple=TRUE)
+     
+     #choices<-c(unique(tag_list$WhatLvl1),"Show All")
+     #if(is.null(input$selectHow) ||input$selectHow == "Show All"){
+     #  selectizeInput(inputId="selectWhatLevelOne",label = "What (Level 1)",choices=choices,selected="Show All",multiple=TRUE)
+     #}else{
+     #  optsChoices<-tag_list %>% filter(How1 %in% input$selectHow) %>% select(WhatLvl1)
+      # optsChoices<-optsChoices$WhatLvl1[!is.na(optsChoices$WhatLvl1)]
+      # selectizeInput(inputId="selectWhatLevelOne",label = "What (Level 1)",choices=choices,selected=optsChoices,multiple=TRUE)
+     #}
      
    })
   
@@ -273,11 +284,11 @@ shinyServer(function(input, output, session){
     if(length(values$code) == 0){
       return(NA)
     }else{
-      pmid<-filter(fig_list,basename == values$code) %>% select(PMID)
-      print(pmid)
-      tmp<-filter(tag_list,PMID == pmid$PMID) %>%
+      pmid<-filter(fig_list,basename == values$code) %>% select(basename)
+      
+      tmp<-filter(tag_list,basename == pmid$basename) %>%
         select(contains("Lvl"),contains("How"))
-      print(tmp)
+
       return(tmp)
     }
   },options = list(dom = 't'))
