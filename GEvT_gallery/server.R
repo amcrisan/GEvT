@@ -67,10 +67,6 @@ filter.tags <- function(x,showAll=TRUE) {
   # Returns:
   #   A matrix containing filtered figures.
   
-  if(!showAll){
-    x<-setdiff(x,"Show All")
-  }
-  
   list_of_ind <- llply(x, function(x) which(grepl(x, fig_list$tags, ignore.case = TRUE)))
   id_ind <- Reduce(intersect, list_of_ind) # intersection
   ind_set <- unique(unlist(list_of_ind)) # get set
@@ -109,6 +105,11 @@ pad.Vector <- function(x) {
 
 shinyServer(function(input, output, session){
 
+  # Create a reactiveValues object, to let us use settable reactive values
+  values <- reactiveValues()
+  values$clicked <- FALSE
+  #values$code <- NULL
+  
   datasetInput <- reactive({
     if((length(input$selectWhatLevelOne) + length(input$selectWhatLevelTwo)) == 0) {
 
@@ -120,25 +121,15 @@ shinyServer(function(input, output, session){
       index_whatTwo <- as.list(input$selectWhatLevelTwo) # indices of selected type
       index_how <- as.list(input$selectHow)
       
-      #just checking how often it says to "show all
-      tmp<-c(index_whatOne,index_whatTwo,index_how)
-      temp2<-sapply(tmp,function(val){
-        showAllNum<-llply(val, function(x) which(grepl("Show All", x, ignore.case = TRUE)))
-      })
-      
-      showAllNum<-sum(unlist(temp2))
-      showAllNum<-ifelse(showAllNum== 2, TRUE,FALSE)
-      
-      
       list_of_indices <- list(filter.tags(index_whatOne,showAllNum),
                               filter.tags(index_whatTwo,showAllNum),
                               filter.tags(index_how,showAllNum))
-      
+
       # remove empty elements from list of indices
       list_of_indices_clean <- delete.NULLs(list_of_indices)
 
       index_final <- Reduce(intersect, list_of_indices_clean)
-
+    
       index_padded <- pad.Vector(index_final)
 
       if(length(index_padded)/3 > 0) {
@@ -159,10 +150,6 @@ shinyServer(function(input, output, session){
   }, sanitize.text.function = function(x) x,
   include.colnames = FALSE, include.rownames = FALSE)
   
-  # Create a reactiveValues object, to let us use settable reactive values
-  values <- reactiveValues()
-  values$clicked <- FALSE
-  #values$code <- NULL
 
   # When the app loads, if there is a hash value then load that figure
   observe({
@@ -190,44 +177,53 @@ shinyServer(function(input, output, session){
   
 
    output$whatLevelOne<-renderUI({
-     choices<-c(unique(tag_list$WhatLvl1),"Show All")
-     selectizeInput(inputId="selectWhatLevelOne",label = "What (Level 1)",choices=choices,selected="Show All",multiple=TRUE)
-     
-     #choices<-c(unique(tag_list$WhatLvl1),"Show All")
-     #if(is.null(input$selectHow) ||input$selectHow == "Show All"){
-     #  selectizeInput(inputId="selectWhatLevelOne",label = "What (Level 1)",choices=choices,selected="Show All",multiple=TRUE)
-     #}else{
-     #  optsChoices<-tag_list %>% filter(How1 %in% input$selectHow) %>% select(WhatLvl1)
-      # optsChoices<-optsChoices$WhatLvl1[!is.na(optsChoices$WhatLvl1)]
-      # selectizeInput(inputId="selectWhatLevelOne",label = "What (Level 1)",choices=choices,selected=optsChoices,multiple=TRUE)
-     #}
+     choices<-unique(tag_list$WhatLvl1)
+     checkboxGroupInput(inputId="selectWhatLevelOne",label = "What (Level 1)",choices=choices,selected=choices)
      
    })
   
    
-   output$whatLevelTwo<-renderUI({
-     if(is.null(input$selectWhatLevelOne) ||input$selectWhatLevelOne == "Show All"){
-       choices<-unique(tag_list$WhatLvl2)
-       choices<-c(choices[!is.na(choices)],"Show All")
-       selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices=choices,selected="Show All",multiple=TRUE)
-     }else{
-       choices<-tag_list %>% filter(WhatLvl1 %in% input$selectWhatLevelOne) %>% select(WhatLvl2)
-       choices<-choices$WhatLvl2[!is.na(choices$WhatLvl2)]
-       selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices=choices,selected=choices,multiple=TRUE)
-     }
+   #output$whatLevelTwo<-renderUI({
+     #selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices="Show All",selected="Show All",multiple=TRUE)
      
-   })
-   
+     #choices<-unique(tag_list$WhatLvl2)
+     #choices<-c(choices[!is.na(choices)],"Show All")
+     #selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices=choices,selected="Show All",multiple=TRUE)
+     # if(is.null(input$selectWhatLevelOne) ||input$selectWhatLevelOne == "Show All"){
+     #   choices<-unique(tag_list$WhatLvl2)
+     #   choices<-c(choices[!is.na(choices)],"Show All")
+     #   selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices=choices,selected="Show All",multiple=TRUE)
+     # }else{
+     #   choices<-tag_list %>% filter(WhatLvl1 %in% input$selectWhatLevelOne) %>% select(WhatLvl2)
+    #   choices<-choices$WhatLvl2[!is.na(choices$WhatLvl2)]
+    #   selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices=choices,selected=choices,multiple=TRUE)
+     # }
+     # 
+   #})
    
    output$How<-renderUI({
     choices<-unique(tag_list$How1)
-    choices<-c(choices[!is.na(choices)],"Show All")
-    selectizeInput(inputId="selectHow",label = "How Visualized",choices=choices,selected="Show All",multiple=TRUE)
-
+    choices<-choices[!is.na(choices)]
+    checkboxGroupInput(inputId="selectHow",label = "How Visualized",choices=choices,selected=choices)
    })
    
    
+   #update What level 1 and how level 1 based upon  How
+   observe({
+     
+     choices<-unique(tag_list$WhatLvl2)
+     
+     selected<-tag_list %>% filter(WhatLvl1 %in% input$selectWhatLevelOne) %>% 
+       filter(How1 %in% input$selectHow)%>%
+       select(WhatLvl2)
+     
+     selected<-selected$WhatLvl2[!is.na(selected$WhatLvl2)]
+     
+     updateSelectizeInput(session,"selectWhatLevelTwo",choices=choices,selected=selected)
+     
+  })
   
+
   output$figImage <- renderImage({
 
     if(length(values$code) == 0) {
