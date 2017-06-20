@@ -95,7 +95,7 @@ pad.Vector <- function(x) {
   #   Vector of length multiple of 3
 
   # determine length of padding needed to fill matrix of ncol = 3
-  n <- 3 * ceiling(length(x) / 3) - length(x)
+  n <- 2 * ceiling(length(x) / 2) - length(x)
 
   x_padded <- c(x, rep(NA, n))
   x_padded
@@ -114,7 +114,7 @@ shinyServer(function(input, output, session){
     if((length(input$selectWhatLevelOne) + length(input$selectWhatLevelTwo)) == 0) {
 
       txt_padded <- pad.Vector(txt)
-      mat <- matrix(txt_padded , ncol = 3, byrow = TRUE)
+      mat <- matrix(txt_padded , ncol = 2, byrow = TRUE)
 
     } else {
       index_whatOne <- as.list(input$selectWhatLevelOne) # indices of selected type
@@ -132,8 +132,8 @@ shinyServer(function(input, output, session){
     
       index_padded <- pad.Vector(index_final)
 
-      if(length(index_padded)/3 > 0) {
-        matrix(txt[index_padded], ncol = 3, nrow = (length(index_padded)/3), byrow = TRUE)
+      if(length(index_padded)/2 > 0) {
+        matrix(txt[index_padded], ncol = 2, nrow = (length(index_padded)/2), byrow = TRUE)
       } else {
         empty_figs <- "There are no graphs that match the selected criteria."
         matrix(empty_figs, nrow = 1, ncol = 1) # return empty matrix to avoid console warning
@@ -177,34 +177,15 @@ shinyServer(function(input, output, session){
   
 
    output$whatLevelOne<-renderUI({
-     choices<-unique(tag_list$WhatLvl1)
-     checkboxGroupInput(inputId="selectWhatLevelOne",label = "What (Level 1)",choices=choices,selected=choices)
+     choices<-sort(unique(tag_list$WhatLvl1))
+     checkboxGroupInput(inputId="selectWhatLevelOne",label = "What - Level 1",choices=choices,selected=choices)
      
    })
   
-   
-   #output$whatLevelTwo<-renderUI({
-     #selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices="Show All",selected="Show All",multiple=TRUE)
-     
-     #choices<-unique(tag_list$WhatLvl2)
-     #choices<-c(choices[!is.na(choices)],"Show All")
-     #selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices=choices,selected="Show All",multiple=TRUE)
-     # if(is.null(input$selectWhatLevelOne) ||input$selectWhatLevelOne == "Show All"){
-     #   choices<-unique(tag_list$WhatLvl2)
-     #   choices<-c(choices[!is.na(choices)],"Show All")
-     #   selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices=choices,selected="Show All",multiple=TRUE)
-     # }else{
-     #   choices<-tag_list %>% filter(WhatLvl1 %in% input$selectWhatLevelOne) %>% select(WhatLvl2)
-    #   choices<-choices$WhatLvl2[!is.na(choices$WhatLvl2)]
-    #   selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices=choices,selected=choices,multiple=TRUE)
-     # }
-     # 
-   #})
-   
    output$How<-renderUI({
-    choices<-unique(tag_list$How1)
+    choices<-strsplit(paste0(unique(tag_list$How1),collapse=","),",") %>% unlist() %>% unique()
     choices<-choices[!is.na(choices)]
-    checkboxGroupInput(inputId="selectHow",label = "How Visualized",choices=choices,selected=choices)
+    checkboxGroupInput(inputId="selectHow",label = "How - Level 1",choices=choices,selected=choices)
    })
    
    
@@ -275,6 +256,23 @@ shinyServer(function(input, output, session){
       return(link)
     }
   })
+  
+  output$figPaper_annotation<-renderText({
+    if(length(values$code) == 0) {
+      x<- ""
+      return(x)
+    } else {
+      print(values$code)
+      #x<-paste("Source:", toString(fig_list[fig_list$basename == values$code,]$PMID))
+      record<-fig_list[fig_list$basename == values$code,]
+      
+      url=paste0(paste0("http://labelme2.csail.mit.edu/Release3.0/tool.html?collection=LabelMe&mode=f&folder=users/amcrisan///gevit&image=",record$basename),".jpg")
+      link <- paste(a("Show Annotations", href = url, target = "_blank"))
+      
+      return(link)
+    }
+  })
+  
   
   output$codeTable<-renderDataTable({
     if(length(values$code) == 0){

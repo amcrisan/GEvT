@@ -1,0 +1,11 @@
+name: gevit_gallery_prototype
+title: GEviT Gallery Prototype
+account: amcrisan
+server: shinyapps.io
+appId: 181338
+bundleId: 830844
+url: https://amcrisan.shinyapps.io/gevit_gallery_prototype/
+when: 1495028849.12845
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .Rapp.history

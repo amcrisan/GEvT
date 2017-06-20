@@ -1,9 +1,9 @@
 PMID,basename,WhatLvl1,WhatLvl2,WhatLvl3,How1,How2
 24788657,Torok-E-2014-Fig1,Admin,Patient ID,NA,Timeline,Annotation
-24788657,Torok-E-2014-Fig1,Admin,Patient Sample ID,NA,Timeline,"Annotation, Colour"
-24788657,Torok-E-2014-Fig1,Genomic,SNP Distance,NA,Phylogeny,"Annotation, Position"
+24788657,Torok-E-2014-Fig1,Admin,Patient Sample ID,NA,Timeline,"Annotation,Colour"
+24788657,Torok-E-2014-Fig1,Genomic,SNP Distance,NA,Phylogeny,"Annotation,Position"
 24788657,Torok-E-2014-Fig1,Genomic,Clusters,NA,Phylogeny,"Position,Colour"
-24788657,Torok-E-2014-Fig1,Spatial,Location,NA,Timeline,Colour
+24788657,Torok-E-2014-Fig1,Spatial,Location,Patient,Timeline,Colour
 24788657,Torok-E-2014-Fig1,Laboratory,Test Performed,Medical,Timeline,Glyph
 24788657,Torok-E-2014-Fig1,Laboratory,Test Performed,Sequencing,Timeline,Glyph
 24788657,Torok-E-2014-Fig1,Laboratory,Test Result,Medical,Timeline,Colour
@@ -11,27 +11,41 @@ PMID,basename,WhatLvl1,WhatLvl2,WhatLvl3,How1,How2
 24788657,Torok-E-2014-Fig1,Temporal,Episode Duration,NA,Timeline,Bar
 24788657,Torok-E-2014-Fig1,Temporal,Test Date,NA,Timeline,Position
 24788657,Torok-E-2014-Fig1,Transmission,Patint to Patient,NA,Phylogeny,NA
-25371418,Quick-2014-Fig1,Genomic,Clades,NA,Map,Annotation
-25371418,Quick-2014-Fig1,Temporal,Test Date,NA,Map,Position
-25371418,Quick-2014-Fig1,Medical,Sample,Sample Source,Map,Colour
-25371418,Quick-2014-Fig1,Spatial,Location,NA,Map,Position
-25371418,Quick-2014-Fig1,Spatial,Movement,NA,Map,"Line, Line Type"
-25371418,Quick-2014-Fig1,Transmission,Patient and Environment,NA,Map,"Line, Line Type"
+25371418,Quick-2014-Fig1,Genomic,Clades,NA,"Map,Timeline",Annotation
+25371418,Quick-2014-Fig1,Temporal,Test Date,NA,"Map,Timeline",Position
+25371418,Quick-2014-Fig1,Medical,Sample,Sample Source,"Map,Timeline",Colour
+25371418,Quick-2014-Fig1,Spatial,Location,Patient,"Map,Timeline",Position
+25371418,Quick-2014-Fig1,Spatial,Movement,NA,"Map,Timeline","Line,Line Type"
+25371418,Quick-2014-Fig1,Transmission,Patient and Environment,NA,"Map,Timeline","Line,Line Type"
 25414729,Halachev-MR-2014,Genomic,Clusters,Genotype,Timeline,Facet
 25414729,Halachev-MR-2014,Genomic,Phylogeny,NA,Timeline,Annotation
 25414729,Halachev-MR-2014,Temporal,Episode Duration,NA,Timeline,Bar
-25414729,Halachev-MR-2014,Spatial,Location,NA,Timeline,Colour
-25414729,Halachev-MR-2014,Laboratory,Test Type,Medical,Timeline,"Glyph, Line"
-25414729,Halachev-MR-2014,Laboratory,Test Type,Sequencing,Timeline,"Glyph, Line"
+25414729,Halachev-MR-2014,Spatial,Location,Patient,Timeline,Colour
+25414729,Halachev-MR-2014,Laboratory,Test Type,Medical,Timeline,"Glyph,Line"
+25414729,Halachev-MR-2014,Laboratory,Test Type,Sequencing,Timeline,"Glyph,Line"
 25414729,Halachev-MR-2014,Laboratory,Test Date,NA,Timeline,Position
 22914622,Snitkin-ES-2012,Admin,Patient ID,NA,Timeline,Annotation
-22914622,Snitkin-ES-2012,Spatial,Location,NA,Timeline,Colour
+22914622,Snitkin-ES-2012,Spatial,Location,Patient,Timeline,Colour
 22914622,Snitkin-ES-2012,Laboratory,Test Performed,NA,Timeline,"Line, Colour"
 22914622,Snitkin-ES-2012,Temporal,Admission Date,NA,Timeline,Position
 22914622,Snitkin-ES-2012,Temporal,Episode Duration,NA,Timeline,Bar
 22914622,Snitkin-ES-2012,Temporal,Test Date,NA,Timeline,Position
 22914622,Snitkin-ES-2012,Transmission,Transmission Confidence,NA,Node-link graph,Colour
-22914622,Snitkin-ES-2012,Transmission,Patient to Patient,NA,Node-linke graph,Line
-25712531,Chung-TE-2015,Transmission,Patient to Patient,NA,Phylogeny,
+22914622,Snitkin-ES-2012,Transmission,Patient to Patient,NA,Node-link graph,Line
+25712531,Chung-TE-2015,Transmission,Date,Inferred,Phylogeny,"Position, Annotation"
 25712531,Chung-TE-2015,Spatial,Location,NA,Phylogeny,Colour
 25712531,Chung-TE-2015,Spatial,Location,NA,Timeline,"Position, Annotation"
+25712531,Chung-TE-2015,Genomic,Genotype,Gene Present,Bar Chart,"Position, Colour, Saturation"
+25712531,Chung-TE-2015,Laboratory,Test Date,NA,Timeline,"Line, Annotation"
+25712531,Chung-TE-2015,Laboratory,Sample Source,NA,Timeline,Colour
+25712531,Chung-TE-2015,Genomic,Genotype,Gene Present,Timeline,Glyph
+25712531,Chung-TE-Fig-2-2015,Spatial,Location,Room,Map,"Area, Colour, Position"
+25712531,Chung-TE-Fig-2-2015,Spatial,Location,Room,Bar Chart,"Facets, Colour"
+25712531,Chung-TE-Fig-2-2015,Temporal,Date,NA,Bar Chart,"Position, Colour"
+25712531,Chung-TE-Fig-2-2015,Treatment,Drug Susceptibility,Binary,Phylogeny,"Glyph, Colour"
+25712531,Chung-TE-Fig-2-2015,Treatment,Drug Susceptibility,NA,Bar Chart,"Facet, Colour, Lightness"
+25712531,Chung-TE-Fig-2-2015,Genomic,Lineage,Mutation,Phylogeny,"Glyph,Colour"
+25712531,Chung-TE-Fig-2-2015,Epidemiology,Case Count,NA,Dual Axis Chart,Bar
+25712531,Chung-TE-Fig-2-2015,Laboratory,Test Result,NA,Dual Axis Chart,"Line, Colour"
+25712531,Chung-TE-Fig-2-2015,Genomic,SNP Distance,NA,Phylogeny,Position
+25712531,Chung-TE-Fig-2-2015,Genomic,Genotype,Gene Present,Bar Chart,"Colour, Saturation"

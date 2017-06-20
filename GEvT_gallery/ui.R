@@ -33,51 +33,24 @@ shinyUI(fluidPage(
 
   includeCSS(file.path("www", "css", "app.css")),
 
-  titlePanel("GEViT Prototype"),
+  titlePanel("GEviT Prototype"),
   sidebarLayout(
     sidebarPanel(
       id = "sidepanel",
       width = 3,
       h3("About"),
-      #includeMarkdown("about.md"),
-      #tags$div(id = "popup",
-      #         helpPopup(strong("Additional Information"),
-      #                   includeMarkdown("about-extended.md"),
-      #                   placement = "right", trigger = "click")),
+      includeMarkdown("about.md"),
+      tags$div(id = "popup",
+               helpPopup(strong("Additional Information"),
+                         includeMarkdown("about-extended.md"),
+                         placement = "right", trigger = "click")),
       br(),
-      p("Filter by Data (What)"),
+      h3("What"),
       uiOutput("whatLevelOne"),
-      selectizeInput(inputId="selectWhatLevelTwo",label = "What (Level 2)",choices="Show All",selected="Show All",multiple=TRUE),
+      selectizeInput(inputId="selectWhatLevelTwo",label = "What - Level 2",choices="Show All",selected="Show All",multiple=TRUE),
       br(),
-      p("Filter by visualization design (How)"),
+      h3("How"),
       uiOutput("How")
-      # checkboxGroupInput("type", strong("Filter by type"),
-      #                    choices = c("Good", "Not Recommended"),
-      #                    selected = list())#,
-
-      # checkboxGroupInput("dataset", strong("Filter by tags"),
-      #                    choices =
-      #                      c("Dot Plot", "Line Graph", "Pie Chart",
-      #                        "Bar Chart", "Scatterplot", "Trellis Display",
-      #                        "Histogram", "Boxplot", "Timeseries", "Table",
-      #                        "Bubble Chart", "Month Plot", "Area Plot",
-      #                        "Waffle Chart"),
-      #                    selected = list()),
-      # 
-      # checkboxGroupInput("element", strong("Filter by graph elements"),
-      #                    choices =
-      #                      c("Annotation", "Footnote", "Multiple Plots",
-      #                        "Data Labels", "Loess Smoothing", "Jitter",
-      #                        "Legend", "Subscript"),
-      #                    selected = list()),
-      # 
-      # checkboxGroupInput("chapter", strong("Filter by chapter"),
-      #                    choices =
-      #                      c("ch01_intro", "ch02_limitations", "ch03_perception",
-      #                        "ch04_1or2dim", "ch05_morethan2var",
-      #                        "ch06_general", "ch07_scales", "ch08_beforeafter",
-      #                        "ch09_software", "ch10_qanda", "other"),
-      #                    selected = list())
     ),
 
     mainPanel(
@@ -101,10 +74,11 @@ shinyUI(fluidPage(
                  #),
                  br(),
                  htmlOutput("figPaper_info"),
+                 #htmlOutput("figPaper_annotation"),
                  br(),
                  imageOutput("figImage_only", height = "100%"),
                  br(),
-                 h4("Qualtitative Codes"),
+                 h4("GEviT Terms"),
                  dataTableOutput("codeTable"))#,
         #tabPanel("Annotate",htmlOutput("annotate_interface"))#,
         #tabPanel("Paper Info",htmlOutput("figPaper_info"))
