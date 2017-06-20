@@ -111,15 +111,15 @@ shinyServer(function(input, output, session){
   #values$code <- NULL
   
   datasetInput <- reactive({
-    if((length(input$selectWhatLevelOne) + length(input$selectWhatLevelTwo)) == 0) {
+    if((length(str_extract(input$selectWhatLevelOne,"[A-Z,a-z]+")) + length(input$selectWhatLevelTwo)) == 0) {
 
       txt_padded <- pad.Vector(txt)
       mat <- matrix(txt_padded , ncol = 2, byrow = TRUE)
 
     } else {
-      index_whatOne <- as.list(input$selectWhatLevelOne) # indices of selected type
+      index_whatOne <- as.list(str_extract(input$selectWhatLevelOne,"[A-Z,a-z]+")) # indices of selected type
       index_whatTwo <- as.list(input$selectWhatLevelTwo) # indices of selected type
-      index_how <- as.list(input$selectHow)
+      index_how <- as.list(str_extract(input$selectHow,"[A-Z,a-z]+"))
       
       list_of_indices <- list(filter.tags(index_whatOne,showAllNum),
                               filter.tags(index_whatTwo,showAllNum),
@@ -177,14 +177,32 @@ shinyServer(function(input, output, session){
   
 
    output$whatLevelOne<-renderUI({
-     choices<-sort(unique(tag_list$WhatLvl1))
+     #gonna set up the tag list based on absolute, not relative, numbers
+     choices<-colSums(with(tag_list,table(basename,WhatLvl1))!=0)
+     choices<-sprintf("%s (%d)", names(choices),choices)
+     #choices<-sort(unique(tag_list$WhatLvl1))
+     
      checkboxGroupInput(inputId="selectWhatLevelOne",label = "What - Level 1",choices=choices,selected=choices)
      
    })
   
    output$How<-renderUI({
-    choices<-strsplit(paste0(unique(tag_list$How1),collapse=","),",") %>% unlist() %>% unique()
-    choices<-choices[!is.na(choices)]
+     tmp<-colSums(with(tag_list,table(basename,How1))!=0)
+     choices<-data.frame(type=names(tmp),
+                            total=tmp)
+     
+     #for those stupid instances where there is comma
+     tmp1<-choices %>%
+       mutate(type = strsplit(as.character(type), ",")) %>% 
+       tidyr::unnest(type) %>%
+       group_by(type)%>%
+       tally(total)
+
+     choices<-sprintf("%s (%d)", tmp1$type,tmp1$n)
+     
+     
+    #choices<-strsplit(paste0(unique(tag_list$How1),collapse=","),",") %>% unlist() %>% unique()
+    #choices<-choices[!is.na(choices)]
     checkboxGroupInput(inputId="selectHow",label = "How - Level 1",choices=choices,selected=choices)
    })
    
@@ -192,13 +210,20 @@ shinyServer(function(input, output, session){
    #update What level 1 and how level 1 based upon  How
    observe({
      
-     choices<-unique(tag_list$WhatLvl2)
+     #choices<-unique(tag_list$WhatLvl2)
+     choices<-colSums(with(tag_list,table(basename,WhatLvl2))!=0)
      
-     selected<-tag_list %>% filter(WhatLvl1 %in% input$selectWhatLevelOne) %>% 
-       filter(How1 %in% input$selectHow)%>%
+     selected<-tag_list %>% filter(WhatLvl1 %in% str_extract(input$selectWhatLevelOne,"[A-Z,a-z]+")) %>% 
+       filter(How1 %in% str_extract(input$selectHow,"[A-Z,a-z]+"))%>%
        select(WhatLvl2)
      
-     selected<-selected$WhatLvl2[!is.na(selected$WhatLvl2)]
+     #selected<-selected$WhatLvl2[!is.na(selected$WhatLvl2)]
+     selected<-choices[selected$WhatLvl2[!is.na(selected$WhatLvl2)]]
+     
+     choices<-names(choices)
+     selected<-names(selected)
+     #choices<-sprintf("%s (%d)", names(choices),choices)
+     #selected<-sprintf("%s (%d)", names(selected),selected)
      
      updateSelectizeInput(session,"selectWhatLevelTwo",choices=choices,selected=selected)
      
